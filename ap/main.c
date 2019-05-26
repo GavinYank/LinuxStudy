@@ -17,8 +17,8 @@ int main(int argc, char* argv[])
 	argc = argc;
 
 	//FileMain();
-	DListMain();
-	//Gof23PatternMain();
+	//DListMain();
+	Gof23PatternMain();
 	//MyProcessMain();	
 	//printf("Hello World2\n");com
 	//printf("Hello World31546\n");
