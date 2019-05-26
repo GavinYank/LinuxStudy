@@ -1,0 +1,154 @@
+
+
+CC = gcc
+CPP = g++
+AR = ar
+OBJDUMP = objdump
+
+MACHINE = 
+CFLAGS = -g -W -Wall -Werror -Wunused-function -ffunction-sections -fdata-sections -Wformat
+INCLUDE_DIR += -I$(TOP)/include
+CFLAGS_C = $(MACHINE) $(CFLAGS) $(INCLUDE_DIR)
+
+ECHO = echo
+COPY = cp
+MOVE = mv
+DEL_DIR = rm
+MKDIR = mkdir
+
+
+.PHONY: all clean all_sub clean_sub $(SUB_DIRS) link
+
+
+OBJPATH = obj
+TMPD = $(OBJPATH)/tmpd
+
+
+ifneq ($(MAKECMDGOALS), clean)
+
+C_FILE = $(filter %.c, $(SRC_C))
+CPP_FILE = $(filter %.cpp, $(SRC_C))
+ASM_FILE = $(filter %.S, $(SRC_C))
+
+DEPS_H = $(patsubst %.c, %.d, $(C_FILE))
+DEPS_H += $(patsubst %.cpp, %.d, $(CPP_FILE))
+DEPS_H += $(patsubst %.S, %.d, $(ASM_FILE))
+
+DEPS = $(addprefix $(OBJPATH)/, $(DEPS_H))
+
+OBJ = $(patsubst %.d, %.o, $(DEPS))
+
+	-include $(DEPS)
+endif
+
+debug:
+	@$(ECHO) $(SRC_C)
+	@$(ECHO) $(DEPS)
+	@$(ECHO) $(OBJ)
+
+$(OBJPATH)/%.d: %.c
+	@$(ECHO) making depends of $<
+	@$(MKDIR) -p "$(OBJPATH)/$(dir $<)"
+	@$(ECHO) -n "$@ $(OBJPATH)/$(dir $<)">$(TMPD)
+	@$(CC) $(CFLAGS_C) -MM $< >> $(TMPD)
+	@$(COPY) $(TMPD) $@
+
+$(OBJPATH)/%.o: %.c
+	@$(ECHO) compiling $<
+	@$(CC) $(CFLAGS_C) -c $< -o $@
+
+$(OBJPATH)/%.d: %.cpp
+	@$(ECHO) making depends of $<
+	@$(MKDIR) -p "$(OBJPATH)/$(dir $<)"
+	@$(ECHO) -n "$@ $(OBJPATH)/$(dir $<)">$(TMPD)
+	@$(CPP) $(CFLAGS_C) -MM $< >> $(TMPD)
+	@$(COPY) $(TMPD) $@
+
+$(OBJPATH)/%.o: %.cpp
+	@$(ECHO) compiling $<
+	@$(CPP) $(CFLAGS_C) -c $< -o $@
+
+CLR_TARGET:
+	@$(DEL_DIR) -f $(TOP)/lib/$(TARGET)
+
+$(TARGET): CLR_TARGET $(OBJ)
+	@$(ECHO) generating    $@
+	@$(AR) rcs $(OBJPATH)/$@ $(OBJ)
+	@$(COPY) $(OBJPATH)/$@ $(TOP)/lib/$@
+	@$(ECHO)
+
+
+all: $(TARGET) make_sub_dir
+ifeq ($(LINK_CMD), link)
+	@$(MAKE) -s link
+endif
+
+EXE_FILE_NAME = test
+
+del_exe_file:
+	$(DEL_DIR) -f $(TOP)/$(EXE_FILE_NAME)
+
+link: del_exe_file
+	@$(ECHO)
+	@$(ECHO)			generating and executing executable file
+	@$(ECHO)
+	@$(CC) $(CFLAGS_C) -o $(EXE_FILE_NAME) -Xlinker "-(" $(SRC_A) -lpthread -Xlinker "-)"
+ifneq ($(TOP), .)
+	@-$(MOVE) -f -u $(EXE_FILE_NAME) $(TOP)/$(EXE_FILE_NAME)
+endif
+	@./$(TOP)/$(EXE_FILE_NAME)
+	@$(ECHO)
+
+clean_help:
+	@$(ECHO) "deleting obj"
+	@$(DEL_DIR) -rf $(OBJPATH)
+	@if test -f $(TOP)/lib/$(TARGET); then\
+		$(ECHO) "deleting $(TARGET)"; \
+		$(DEL_DIR) -f $(TOP)/lib/$(TARGET); \
+	fi
+	@$(DEL_DIR) -f $(TOP)/$(EXE_FILE_NAME) 
+	@$(ECHO)
+
+clean: clean_help make_sub_dir
+	
+
+$(SUB_DIRS):
+	@if test -d $@; then \
+		cd $@; \
+		$(MAKE) -s all; \
+		cd ..; \
+	fi
+
+
+
+make_sub_dir:
+	@for dir in $(SUB_DIRS); do \
+		if test -d $$dir; then \
+			if \
+			( \
+				cd $$dir; \
+				if test -f makefile; then \
+					$(ECHO) "cd $$dir: make -s $(MAKECMDGOALS)"; \
+					$(MAKE) -s $(MAKECMDGOALS); \
+				else \
+					$(ECHO) "no makefile"; \
+				fi \
+			); \
+			then \
+				true; \
+			else \
+				$(ECHO) "oh, no";\
+				exit 1; \
+			fi; \
+		fi \
+	done
+
+ifeq ($(MAKECMDGOALS), link)
+
+#GCC_LIB = /usr/lib/gcc/i486-linux-gnu/4.3.3
+GCC_LIB = /usr/lib/gcc/x86_64-linux-gnu/7
+SRC_A = $(GCC_LIB)/libstdc++.a
+SRC_A += $(wildcard $(TOP)/lib/*.a)
+
+endif
+			
