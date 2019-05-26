@@ -17,13 +17,13 @@ int main(int argc, char* argv[])
 	argc = argc;
 
 	//FileMain();
-	//DListMain();
+	DListMain();
 	//Gof23PatternMain();
 	//MyProcessMain();	
 	//printf("Hello World2\n");com
 	//printf("Hello World31546\n");
 	//process_test();
-	pthread_main();
+	//pthread_main();
 	
 	//#error
 	return (0);
