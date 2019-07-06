@@ -21,7 +21,7 @@ int main(int argc, char* argv[])
 	Gof23PatternMain();
 	//MyProcessMain();	
 	printf("Hello World2\n");
-	//printf("Hello World31546\n");
+	printf("Hello World31546\n");
 	//process_test();
 	//pthread_main();
 	
