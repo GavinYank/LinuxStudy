@@ -6,7 +6,7 @@ AR = ar
 OBJDUMP = objdump
 
 MACHINE = 
-CFLAGS = -g -W -Wall -Werror -Wunused-function -ffunction-sections -fdata-sections -Wformat
+CFLAGS = -W -Wall -Werror -Wunused-function -ffunction-sections -fdata-sections -Wformat
 INCLUDE_DIR += -I$(TOP)/include
 CFLAGS_C = $(MACHINE) $(CFLAGS) $(INCLUDE_DIR)
 
