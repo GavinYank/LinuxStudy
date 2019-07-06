@@ -20,7 +20,7 @@ int main(int argc, char* argv[])
 	//DListMain();
 	Gof23PatternMain();
 	//MyProcessMain();	
-	//printf("Hello World2\n");com
+	printf("Hello World2\n");
 	//printf("Hello World31546\n");
 	//process_test();
 	//pthread_main();
